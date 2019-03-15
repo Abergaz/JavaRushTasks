@@ -31,48 +31,32 @@ import java.util.*;
 */
 
 public class Solution {
-    public static void main(String[] args) {
-        TreeMap<Integer,String> treeMap = new TreeMap<Integer, String>();
-        File file;
-        BufferedInputStream bufferedInputStream;
-        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+    public static void main(String[] args) throws IOException {
+        TreeMap<Integer,String> treeMap = new TreeMap<>();
+        BufferedReader reader = new BufferedReader(new InputStreamReader(System.in));
+
         String read;
-        String endFileName;
-        File endFile;
-
-        try {
-            while (!(read=bufferedReader.readLine()).equals("end")){
-                if (!read.trim().equals("")) {
-                    int a = read.lastIndexOf(".part");
-                    if (a!=-1) {
-                        a += 5;
-                        int b = read.length();
-                        String n = read.substring(a, b);
-                        treeMap.put(Integer.parseInt(n), read);
-                    }
-                }
-            }
-            bufferedReader.close();
-
-            file=new File(treeMap.firstEntry().getValue());
-            endFileName=file.getPath().substring(0,file.getPath().lastIndexOf("."));
-            endFile = new File(endFileName);
-
-            BufferedOutputStream bufferedOutputStream = new BufferedOutputStream(new FileOutputStream(endFile),1024);
-
-            for(Map.Entry<Integer,String> entry: treeMap.entrySet()){
-                file = new File(entry.getValue());
-                bufferedInputStream = new BufferedInputStream(new FileInputStream(file), 1024);
-                int r;
-                while ((r=bufferedInputStream.read())!=-1){
-                    bufferedOutputStream.write(r);
-                }
-                bufferedInputStream.close();
-            }
-            bufferedOutputStream.close();
-        } catch (IOException e) {
-            e.printStackTrace();
+        while (!(read = reader.readLine()).equals("end")){
+            String n = read.substring(read.lastIndexOf(".part") + 5);
+            treeMap.put(Integer.parseInt(n), read);
         }
+        reader.close();
+
+        File file = new File(treeMap.firstEntry().getValue());
+        String endFileName = file.getPath().substring(0,file.getPath().lastIndexOf("."));
+
+        BufferedOutputStream streamOut = new BufferedOutputStream(new FileOutputStream(new File(endFileName)),4000);
+
+        for(Map.Entry<Integer,String> entry: treeMap.entrySet()){
+            file = new File(entry.getValue());
+            BufferedInputStream inputStream = new BufferedInputStream(new FileInputStream(file), 4000);
+            int i;
+            while ((i = inputStream.read()) != -1){
+                streamOut.write(i);
+            }
+            inputStream.close();
+        }
+        streamOut.close();
 
     }
 }
