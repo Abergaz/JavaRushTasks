@@ -35,8 +35,50 @@ id productName price quantity
 5. Созданные для файлов потоки должны быть закрыты.
 */
 
-public class Solution {
-    public static void main(String[] args) {
+import java.io.*;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
 
+
+public class Solution {
+    public static void main(String[] args) throws IOException {
+        LinkedHashMap<String,String> linkedHashMap = new LinkedHashMap<String, String>();
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(System.in));
+        File file = new File(bufferedReader.readLine());
+        bufferedReader.close();
+        bufferedReader = new BufferedReader(new InputStreamReader(new FileInputStream(file)));
+        boolean hasChanges=false;
+        String r;
+
+        while ((r=bufferedReader.readLine())!=null){
+            linkedHashMap.put(r.substring(0,8),r.substring(8,r.length()));
+        }
+        bufferedReader.close();
+
+        if (args.length>1 && args[0].equals("-d") && !args[1].trim().equals("")){
+            hasChanges=true;
+            linkedHashMap.remove(formatString(args[1],8));
+        }
+        else if (args.length>3 && args[0].equals("-u") && !args[1].trim().equals("")){
+            hasChanges=true;
+            linkedHashMap.replace(formatString(args[1],8), formatString(args[2],30) + formatString(args[3],8)+formatString(args[4],4));
+        }
+        if (hasChanges){
+            BufferedWriter bufferedWriter = new BufferedWriter(new OutputStreamWriter(new FileOutputStream(file)));
+            for (Map.Entry<String,String> entry:linkedHashMap.entrySet()){
+                bufferedWriter.write(entry.getKey()+entry.getValue());
+                bufferedWriter.newLine();
+            }
+            bufferedWriter.close();
+        }
+
+    }
+    private static String formatString(String s, int i){
+        while (s.toCharArray().length<i){
+            s=s+" ";
+        }
+        s=s.substring(0,i);
+        return s;
     }
 }
