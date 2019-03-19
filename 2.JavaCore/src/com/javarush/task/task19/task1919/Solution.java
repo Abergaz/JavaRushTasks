@@ -37,26 +37,19 @@ import java.util.TreeMap;
 public class Solution {
     public static void main(String[] args) throws IOException {
         FileReader fileReader = new FileReader(args[0]);
+        BufferedReader bufferedReader = new BufferedReader(fileReader);
         TreeMap<String,Double> treeMap = new TreeMap<String, Double>();
-        int r=0;
+        String r="";
         String name="";
         String money="";
-        StringBuilder line=new StringBuilder();
-        while (fileReader.ready()){
-            r=fileReader.read();
-            if (r!=(13) && r!=(10)){
-                line.append((char)r);
-            }else{
-                if (line.length()>0) {
-                    name = line.toString().substring(0, line.toString().indexOf(" "));
-                    money = line.toString().substring(line.toString().indexOf(" ") + 1, line.toString().length());
-                    if (treeMap.containsKey(name)) {
-                        treeMap.replace(name, treeMap.get(name) + Double.parseDouble(money));
-                    } else {
-                        treeMap.put(name, Double.parseDouble(money));
-                    }
-                    line.delete(0, line.length());
-                }
+        while (bufferedReader.ready()){
+            r=bufferedReader.readLine();
+            name = r.substring(0, r.toString().indexOf(" "));
+            money = r.toString().substring(r.indexOf(" ") + 1, r.length());
+            if (treeMap.containsKey(name)) {
+                 treeMap.replace(name, treeMap.get(name) + Double.parseDouble(money));
+            } else {
+                treeMap.put(name, Double.parseDouble(money));
             }
         }
         fileReader.close();
