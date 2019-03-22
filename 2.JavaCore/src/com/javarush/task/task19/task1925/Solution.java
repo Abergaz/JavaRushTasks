@@ -32,7 +32,7 @@ public class Solution {
         while (bufferedReader.ready()){
             String[] arr = bufferedReader.readLine().trim().split("\\s");
             for (int i=0;i<arr.length; i++){
-                if (arr[i].matches("[a-яё]{7,}")){
+                if (arr[i].length()>6){
                     if (isFirst) {
                         bufferedWriter.write(arr[i]);
                         isFirst=false;

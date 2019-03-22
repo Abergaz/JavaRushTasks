@@ -46,7 +46,7 @@ public class Solution {
         printStream.close();
         System.setOut(console);
         String s = byteArrayOutputStream.toString();
-        String[] arr = s.split("\\r\\n");
+        String[] arr = s.split("\\n");
         for(int i=0; i<arr.length; i++){
             if ((i+1)%2==0){
                 System.out.println(arr[i]);
