@@ -46,9 +46,9 @@ public class Solution {
         HashMap<ZipEntry, ByteArrayOutputStream> hashMap = new HashMap<ZipEntry, ByteArrayOutputStream>();
         Path fileName = Paths.get(args[0]);
         Path newFile = Paths.get("new\\"+fileName.getFileName().toString());
-        Path zip = Paths.get(args[1]);
+        //Path zip = Paths.get(args[1]);
 
-        FileInputStream fileInputStream = new FileInputStream(zip.toFile());
+        FileInputStream fileInputStream = new FileInputStream(args[1]);
         ZipInputStream zipInputStream = new ZipInputStream(fileInputStream);
 
         ZipEntry zipEntry;
@@ -67,18 +67,20 @@ public class Solution {
         }
         zipInputStream.close();
 
-        FileOutputStream fileOutputStream = new FileOutputStream(zip.toFile());
+        FileOutputStream fileOutputStream = new FileOutputStream(args[1]);
         ZipOutputStream zipOutputStream = new ZipOutputStream(fileOutputStream);
+
+        String s =newFile.toString();
+        zipOutputStream.putNextEntry(new ZipEntry(s));
+        Files.copy(Paths.get(args[0]),zipOutputStream);
+        zipOutputStream.closeEntry();
+
         for (HashMap.Entry<ZipEntry,ByteArrayOutputStream> entry: hashMap.entrySet()){
-            zipOutputStream.putNextEntry(entry.getKey());
+            zipOutputStream.putNextEntry(new ZipEntry(entry.getKey().getName()));
             zipOutputStream.write(entry.getValue().toByteArray());
             zipOutputStream.closeEntry();
         }
 
-        ZipEntry newEntry = new ZipEntry(newFile.toString());
-        zipOutputStream.putNextEntry(newEntry);
-        Files.copy(fileName,zipOutputStream);
-        zipOutputStream.closeEntry();
         zipOutputStream.close();
     }
 }
