@@ -1,11 +1,8 @@
 package com.javarush.task.task31.task3106;
 
-import java.io.ByteArrayInputStream;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.Paths;
+import java.io.*;
+import java.util.Arrays;
+import java.util.Vector;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -34,25 +31,25 @@ C:/pathToTest/test.zip.002
 */
 public class Solution {
     public static void main(String[] args) throws IOException {
-        Path resultFileName = Paths.get(args[0]);
+        FileOutputStream fileOutputStream = new FileOutputStream(args[0]);
+        Vector<FileInputStream> vector = new Vector<FileInputStream>();
+        String[] fileNameParts = Arrays.stream(args).skip(1).sorted().toArray(String[]::new);
 
-        ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream();
-        for (int i=1; i<args.length;i++){
-            byteArrayOutputStream.write(Files.readAllBytes(Paths.get(args[i])));
+        for (String s : fileNameParts){
+            vector.add(new FileInputStream(s));
         }
-        ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(byteArrayOutputStream.toByteArray());
-        byteArrayOutputStream.reset();
 
-        ZipInputStream zipInputStream = new ZipInputStream(byteArrayInputStream);
+        ZipInputStream zipInputStream = new ZipInputStream(new SequenceInputStream(vector.elements()));
+
         ZipEntry entry;
         while((entry=zipInputStream.getNextEntry())!=null){
             byte[] buffer = new byte[1024];
             int count = 0;
             while ((count = zipInputStream.read(buffer)) != -1){
-                byteArrayOutputStream.write(buffer, 0, count);
+                fileOutputStream.write(buffer, 0, count);
             }
         }
-        byteArrayOutputStream.close();
-        Files.write(resultFileName,byteArrayOutputStream.toByteArray());
+        zipInputStream.close();
+        fileOutputStream.close();
     }
 }
