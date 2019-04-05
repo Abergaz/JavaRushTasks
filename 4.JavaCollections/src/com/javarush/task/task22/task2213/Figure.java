@@ -24,6 +24,31 @@ public class Figure {
 5. В классе Figure должен быть создан корректный геттер для поля y.
 6. В классе Figure должен быть создан корректный геттер для поля matrix.
 7. В классе Figure должен быть создан корректно работающий public конструктор с тремя параметрами int, int и int[][] (x, y и matrix).
+
+Также нам понадобятся методы для управления фигуркой.
+
+Добавь в класс Figure методы:
+left() - для движения фигурки влево.
+right() - для движения фигурки вправо.
+down() - для движения фигурки вниз.
+up() - для движения фигурки вверх.
+rotate() - для поворота фигурки вокруг главной диагонали.
+downMaximum() - падение фигурки в низ до дна.
+boolean isCurrentPositionAvailable() - проверка - может ли фигурка быть помещена в текущую позицию. Для теста захардкодь результат в true, пока мы не реализовали логику.
+landed() - вызывается, когда фигурка достигла дна или уперлась в другую фигурку
+Все ее занятые клетки теперь должны добавиться в Field.
+
+
+Требования:
+1. В классе Figure должен быть создан метод left без параметров.
+2. В классе Figure должен быть создан метод right без параметров.
+3. В классе Figure должен быть создан метод down без параметров.
+4. В классе Figure должен быть создан метод up без параметров.
+5. В классе Figure должен быть создан метод rotate без параметров.
+6. В классе Figure должен быть создан метод downMaximum без параметров.
+7. В классе Figure должен быть создан метод isCurrentPositionAvailable без параметров.
+8. В классе Figure должен быть создан метод landed без параметров.
+9. Метод isCurrentPositionAvailable должен возвращать true.
      */
     private int x;
     private int y;
@@ -40,6 +65,52 @@ public class Figure {
     public int[][] getMatrix() {
         return matrix;
     }
+
+    public void left(){
+        this.x=this.x-1;
+        if (!isCurrentPositionAvailable()){
+            this.x=this.x+1;
+        }
+    }
+
+    public void right(){
+        this.x=this.x+1;
+        if (!isCurrentPositionAvailable()){
+            this.x=this.x-1;
+        }
+    }
+
+    public void down(){
+        this.y=this.y+1;
+        if (!isCurrentPositionAvailable()){
+            this.y=this.y-1;
+        }
+    }
+
+    public void up(){
+        this.y=this.y-1;
+        if (!isCurrentPositionAvailable()){
+            this.y=this.y+1;
+        }
+    }
+
+    public void rotate(){
+
+    }
+
+    public void downMaximum(){
+
+    }
+
+    public boolean isCurrentPositionAvailable(){
+        return true;
+    }
+
+    public void landed(Field field){
+        System.out.println(this.x +" " + this.y);
+        System.exit(1);
+    }
+
 
     public Figure(int x, int y, int[][] matrix) {
         this.x = x;
