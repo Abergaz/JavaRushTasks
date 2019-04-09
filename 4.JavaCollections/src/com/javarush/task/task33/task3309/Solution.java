@@ -45,7 +45,7 @@ public class Solution {
         marshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
         StringWriter writer = new StringWriter();
         XMLStreamWriter xsw = XMLOutputFactory.newFactory().createXMLStreamWriter(writer);
-        MyContetnHandler myContentHandler = new MyContetnHandler(xsw,tagName,comment);
+        //MyContetnHandler myContentHandler = new MyContetnHandler(xsw,tagName,comment);
         marshaller.marshal(obj, xsw);
 
 
