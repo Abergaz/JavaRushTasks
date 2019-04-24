@@ -1,5 +1,6 @@
 package com.javarush.task.task39.task3913;
 
+import com.javarush.task.task39.task3913.query.DateQuery;
 import com.javarush.task.task39.task3913.query.IPQuery;
 import com.javarush.task.task39.task3913.query.UserQuery;
 
@@ -9,7 +10,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class LogParser implements IPQuery, UserQuery {
+public class LogParser implements IPQuery, UserQuery, DateQuery {
     private Path logDir;
     private List<Path> foundFiles = new ArrayList<Path>();
     private List<String> foundLines = new ArrayList<String>();
@@ -323,6 +324,154 @@ public class LogParser implements IPQuery, UserQuery {
         for (Record r : records){
             if (isCurrectDate(r.getDate(),after,before) && Event.DONE_TASK.equals(r.getEvent()) && task==r.getNumEvent()){
                 treeSet.add(r.getUsername());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать даты, когда определенный пользователь произвел определенное событие
+     * @param user
+     * @param event
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Set<Date> getDatesForUserAndEvent(String user, Event event, Date after, Date before) {
+        TreeSet<Date> treeSet = new TreeSet<Date>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && event.equals(r.getEvent()) && user.equals(r.getUsername())){
+                treeSet.add(r.getDate());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать даты, когда любое событие не выполнилось (статус FAILED).
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Set<Date> getDatesWhenSomethingFailed(Date after, Date before) {
+        TreeSet<Date> treeSet = new TreeSet<Date>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && Status.FAILED.equals(r.getStatus())){
+                treeSet.add(r.getDate());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать даты, когда любое событие закончилось ошибкой (статус ERROR).
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Set<Date> getDatesWhenErrorHappened(Date after, Date before) {
+        TreeSet<Date> treeSet = new TreeSet<Date>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && Status.ERROR.equals(r.getStatus())){
+                treeSet.add(r.getDate());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * Должен возвращать дату, когда пользователь залогинился впервые за указанный период. Если такой даты в логах нет - null.
+     * @param user
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Date getDateWhenUserLoggedFirstTime(String user, Date after, Date before) {
+        TreeSet<Date> treeSet = new TreeSet<Date>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && user.equals(r.getUsername()) && Event.LOGIN.equals(r.getEvent())){
+                treeSet.add(r.getDate());
+            }
+        }
+        if (treeSet.size()==0) return null;
+        return treeSet.first();
+    }
+
+    /**
+     * должен возвращать дату, когда пользователь впервые попытался решить определенную задачу. Если такой даты в логах нет - null.
+     * @param user
+     * @param task
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Date getDateWhenUserSolvedTask(String user, int task, Date after, Date before) {
+        TreeSet<Date> treeSet = new TreeSet<Date>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && user.equals(r.getUsername()) && Event.SOLVE_TASK.equals(r.getEvent()) && task==r.getNumEvent()){
+                treeSet.add(r.getDate());
+            }
+        }
+        if (treeSet.size()==0) return null;
+        return treeSet.first();
+    }
+
+    /**
+     * должен возвращать дату, когда пользователь впервые решил определенную задачу. Если такой даты в логах нет - null.
+     * @param user
+     * @param task
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Date getDateWhenUserDoneTask(String user, int task, Date after, Date before) {
+        TreeSet<Date> treeSet = new TreeSet<Date>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && user.equals(r.getUsername()) && Event.DONE_TASK.equals(r.getEvent()) && task==r.getNumEvent()){
+                treeSet.add(r.getDate());
+            }
+        }
+        if (treeSet.size()==0) return null;
+        return treeSet.first();
+    }
+
+    /**
+     * должен возвращать даты, когда пользователь написал сообщение.
+     * @param user
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Set<Date> getDatesWhenUserWroteMessage(String user, Date after, Date before) {
+        TreeSet<Date> treeSet = new TreeSet<Date>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && user.equals(r.getUsername()) && Event.WRITE_MESSAGE.equals(r.getEvent())){
+                treeSet.add(r.getDate());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать даты, когда пользователь скачал плагин.
+     * @param user
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Set<Date> getDatesWhenUserDownloadedPlugin(String user, Date after, Date before) {
+        TreeSet<Date> treeSet = new TreeSet<Date>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && user.equals(r.getUsername()) && Event.DOWNLOAD_PLUGIN.equals(r.getEvent())){
+                treeSet.add(r.getDate());
             }
         }
         return treeSet;
