@@ -1,6 +1,7 @@
 package com.javarush.task.task39.task3913;
 
 import com.javarush.task.task39.task3913.query.DateQuery;
+import com.javarush.task.task39.task3913.query.EventQuery;
 import com.javarush.task.task39.task3913.query.IPQuery;
 import com.javarush.task.task39.task3913.query.UserQuery;
 
@@ -10,7 +11,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class LogParser implements IPQuery, UserQuery, DateQuery {
+public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
     private Path logDir;
     private List<Path> foundFiles = new ArrayList<Path>();
     private List<String> foundLines = new ArrayList<String>();
@@ -475,5 +476,180 @@ public class LogParser implements IPQuery, UserQuery, DateQuery {
             }
         }
         return treeSet;
+    }
+
+    /**
+     * должен возвращать количество уникальных событий за указанный период
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public int getNumberOfAllEvents(Date after, Date before) {
+        TreeSet<Event> treeSet = new TreeSet<Event>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before)){
+                treeSet.add(r.getEvent());
+            }
+        }
+        return treeSet.size();
+    }
+
+    /**
+     * должен возвращать все события за указанный период.
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Set<Event> getAllEvents(Date after, Date before) {
+        TreeSet<Event> treeSet = new TreeSet<Event>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before)){
+                treeSet.add(r.getEvent());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать события, которые происходили с указанного IP.
+     * @param ip
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Set<Event> getEventsForIP(String ip, Date after, Date before) {
+        TreeSet<Event> treeSet = new TreeSet<Event>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && ip.equals(r.getIp())){
+                treeSet.add(r.getEvent());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать события, которые инициировал определенный пользователь.
+     * @param user
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Set<Event> getEventsForUser(String user, Date after, Date before) {
+        TreeSet<Event> treeSet = new TreeSet<Event>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && user.equals(r.getUsername())){
+                treeSet.add(r.getEvent());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать события, которые не выполнились.
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Set<Event> getFailedEvents(Date after, Date before) {
+        TreeSet<Event> treeSet = new TreeSet<Event>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && Status.FAILED.equals(r.getStatus())){
+                treeSet.add(r.getEvent());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать события, которые завершились ошибкой.
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Set<Event> getErrorEvents(Date after, Date before) {
+        TreeSet<Event> treeSet = new TreeSet<Event>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && Status.ERROR.equals(r.getStatus())){
+                treeSet.add(r.getEvent());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать количество попыток решить определенную задачу.
+     * @param task
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public int getNumberOfAttemptToSolveTask(int task, Date after, Date before) {
+        int count=0;
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && Event.SOLVE_TASK.equals(r.getEvent()) && task==r.getNumEvent()){
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     *  должен возвращать количество успешных решений определенной задачи.
+     * @param task
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public int getNumberOfSuccessfulAttemptToSolveTask(int task, Date after, Date before) {
+        int count=0;
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && Event.DONE_TASK.equals(r.getEvent()) && task==r.getNumEvent() ){
+                count++;
+            }
+        }
+        return count;
+    }
+
+    /**
+     * должен возвращать мапу (номер_задачи : * количество_попыток_решить_ее).
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Map<Integer, Integer> getAllSolvedTasksAndTheirNumber(Date after, Date before) {
+        HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && Event.SOLVE_TASK.equals(r.getEvent())){
+                map.put(r.getNumEvent(),map.getOrDefault(r.getNumEvent(),0)+1);
+            }
+        }
+        return map;
+    }
+
+    /**
+     * должен возвращать мапу (номер_задачи : * сколько_раз_ее_решили).
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Map<Integer, Integer> getAllDoneTasksAndTheirNumber(Date after, Date before) {
+        HashMap<Integer, Integer> map = new HashMap<Integer, Integer>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && Event.DONE_TASK.equals(r.getEvent())){
+                map.put(r.getNumEvent(),map.getOrDefault(r.getNumEvent(),0)+1);
+
+            }
+        }
+        return map;
     }
 }
