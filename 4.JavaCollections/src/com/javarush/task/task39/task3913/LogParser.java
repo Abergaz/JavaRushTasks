@@ -1,6 +1,7 @@
 package com.javarush.task.task39.task3913;
 
 import com.javarush.task.task39.task3913.query.IPQuery;
+import com.javarush.task.task39.task3913.query.UserQuery;
 
 import java.io.IOException;
 import java.nio.file.FileVisitOption;
@@ -8,7 +9,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.*;
 
-public class LogParser implements IPQuery {
+public class LogParser implements IPQuery, UserQuery {
     private Path logDir;
     private List<Path> foundFiles = new ArrayList<Path>();
     private List<String> foundLines = new ArrayList<String>();
@@ -133,6 +134,195 @@ public class LogParser implements IPQuery {
         for (Record r : records){
             if (isCurrectDate(r.getDate(),after,before) && status.equals(r.getStatus())){
                 treeSet.add(r.getIp());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать всех пользователей
+     * @return
+     */
+    @Override
+    public Set<String> getAllUsers() {
+        TreeSet<String> treeSet = new TreeSet<String>();
+        for (Record r : records){
+                treeSet.add(r.getUsername());
+
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать количество уникальных пользователей за период
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public int getNumberOfUsers(Date after, Date before) {
+        TreeSet<String> treeSet = new TreeSet<String>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before)){
+                treeSet.add(r.getUsername());
+            }
+        }
+        return treeSet.size();
+    }
+
+    /**
+     * должен возвращать количество уникальных событий за период для пользователя.
+     * @param user
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public int getNumberOfUserEvents(String user, Date after, Date before) {
+        TreeSet<Event> treeSet = new TreeSet<Event>();
+        int count=0;
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && user.equals(r.getUsername())) {
+                treeSet.add(r.getEvent());
+            }
+        }
+        return treeSet.size();
+    }
+
+    /**
+     * должен возвращать пользователей с определенным IP
+     * @param ip
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Set<String> getUsersForIP(String ip, Date after, Date before) {
+        TreeSet<String> treeSet = new TreeSet<String>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && ip.equals(r.getIp())){
+                treeSet.add(r.getUsername());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать пользователей, которые были залогинены.
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Set<String> getLoggedUsers(Date after, Date before) {
+        TreeSet<String> treeSet = new TreeSet<String>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && Event.LOGIN.equals(r.getEvent())){
+                treeSet.add(r.getUsername());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать пользователей, которые скачали плагин.
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Set<String> getDownloadedPluginUsers(Date after, Date before) {
+        TreeSet<String> treeSet = new TreeSet<String>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && Event.DOWNLOAD_PLUGIN.equals(r.getEvent())){
+                treeSet.add(r.getUsername());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать пользователей, которые отправили сообщение
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Set<String> getWroteMessageUsers(Date after, Date before) {
+        TreeSet<String> treeSet = new TreeSet<String>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && Event.WRITE_MESSAGE.equals(r.getEvent())){
+                treeSet.add(r.getUsername());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать пользователей, которые решали любую задачу
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Set<String> getSolvedTaskUsers(Date after, Date before) {
+        TreeSet<String> treeSet = new TreeSet<String>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && Event.SOLVE_TASK.equals(r.getEvent())){
+                treeSet.add(r.getUsername());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать пользователей, которые решали задачу с номером task.
+     * @param after
+     * @param before
+     * @param task
+     * @return
+     */
+    @Override
+    public Set<String> getSolvedTaskUsers(Date after, Date before, int task) {
+        TreeSet<String> treeSet = new TreeSet<String>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && Event.SOLVE_TASK.equals(r.getEvent()) && task==r.getNumEvent()){
+                treeSet.add(r.getUsername());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать пользователей, которые решили любую задачу.
+     * @param after
+     * @param before
+     * @return
+     */
+    @Override
+    public Set<String> getDoneTaskUsers(Date after, Date before) {
+        TreeSet<String> treeSet = new TreeSet<String>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && Event.DONE_TASK.equals(r.getEvent())){
+                treeSet.add(r.getUsername());
+            }
+        }
+        return treeSet;
+    }
+
+    /**
+     * должен возвращать пользователей, которые решали задачу с номером task.
+     * @param after
+     * @param before
+     * @param task
+     * @return
+     */
+    @Override
+    public Set<String> getDoneTaskUsers(Date after, Date before, int task) {
+        TreeSet<String> treeSet = new TreeSet<String>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before) && Event.DONE_TASK.equals(r.getEvent()) && task==r.getNumEvent()){
+                treeSet.add(r.getUsername());
             }
         }
         return treeSet;
