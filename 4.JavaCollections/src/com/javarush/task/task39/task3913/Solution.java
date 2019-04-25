@@ -13,7 +13,29 @@ public class Solution {
 
         //System.out.println(logParser.getAllSolvedTasksAndTheirNumber(null, null));
         //System.out.println(logParser.getAllDoneTasksAndTheirNumber(null, null));
+
         System.out.println(logParser.execute("get ip"));
+        System.out.println(logParser.execute("get user"));
+        System.out.println(logParser.execute("get date"));
+        System.out.println(logParser.execute("get event"));
+        System.out.println(logParser.execute("get status"));
+        /*
+        System.out.println("============ два параметра ==================");
+        System.out.println(logParser.execute("get ip for user = \"Eduard Petrovich Morozko\""));
+
+        System.out.println(logParser.execute("get date for ip = \"127.0.0.1\""));
+
+        System.out.println(logParser.execute("get user for event = \"LOGIN\""));
+
+        System.out.println(logParser.execute("get status for event = \"WRITE_MESSAGE\""));
+        */
+
+
+
+
+
+
+
     }
 
 }
