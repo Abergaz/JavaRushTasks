@@ -1,22 +1,27 @@
 package com.javarush.task.task39.task3913;
 
-import com.javarush.task.task39.task3913.query.DateQuery;
-import com.javarush.task.task39.task3913.query.EventQuery;
-import com.javarush.task.task39.task3913.query.IPQuery;
-import com.javarush.task.task39.task3913.query.UserQuery;
+import com.javarush.task.task39.task3913.query.*;
 
 import java.io.IOException;
+import java.lang.reflect.Array;
 import java.nio.file.FileVisitOption;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.stream.Collectors;
 
-public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
+public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQuery {
     private Path logDir;
     private List<Path> foundFiles = new ArrayList<Path>();
     private List<String> foundLines = new ArrayList<String>();
     private List<Record> records = new ArrayList<Record>();
 
+    public List<String> getFoundLines() {
+        return foundLines;
+    }
 
     public LogParser(Path logDir) {
         this.logDir = logDir;
@@ -325,6 +330,21 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
         for (Record r : records){
             if (isCurrectDate(r.getDate(),after,before) && Event.DONE_TASK.equals(r.getEvent()) && task==r.getNumEvent()){
                 treeSet.add(r.getUsername());
+            }
+        }
+        return treeSet;
+    }
+
+    /**должен возвращать уникальные даты за период
+     *
+     * @return
+     */
+    @Override
+    public Set<Date> getUniqueDates(Date after, Date before) {
+        TreeSet<Date> treeSet = new TreeSet<Date>();
+        for (Record r : records){
+            if (isCurrectDate(r.getDate(),after,before)){
+                treeSet.add(r.getDate());
             }
         }
         return treeSet;
@@ -651,5 +671,27 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery {
             }
         }
         return map;
+    }
+
+    @Override
+    public Set<Object> execute(String query) {
+        String[] arr = query.split(" ");
+        if (arr[0].equals("get")) {
+            switch (Param.valueOf(arr[1].toUpperCase())){
+                case IP:  return foundLines.stream().map(line->line.split("\t")[0]).collect(Collectors.toSet());
+                case DATE:  return foundLines.stream().map(line-> {
+                                                                      try {
+                                                                            return (new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(line.split("\t")[2]));
+                                                                        } catch (ParseException e) {
+                                                                            return null;
+                                                                      }
+                                                                   }).collect(Collectors.toSet());
+
+                case USER: return foundLines.stream().map(line->line.split("\t")[1]).collect(Collectors.toSet());
+                case EVENT: return Arrays.stream(Event.values()).collect(Collectors.toSet());
+                case STATUS: return Arrays.stream(Status.values()).collect(Collectors.toSet());
+            }
+        }
+        return null;
     }
 }
