@@ -11,6 +11,8 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQuery {
@@ -64,6 +66,26 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQ
         if (after == null && before != null && checkDate.getTime() <= before.getTime()) return true;
         if (after != null && before == null && checkDate.getTime() >= after.getTime()) return true;
         if (after != null && before != null && checkDate.getTime() >= after.getTime() && checkDate.getTime() <= before.getTime())
+            return true;
+        return false;
+    }
+    /**
+     * десь и далее, если в методе есть параметры Date after и Date before,
+     * то нужно возвратить данные касающиеся только данного периода ( не включая даты after и before).
+     * Если параметр after равен null, то нужно обработать все записи, у которых дата меньше или равна before.
+     * Если параметр before равен null, то нужно обработать все записи, у которых дата больше или равна after.
+     * Если и after, и before равны null, то нужно обработать абсолютно все записи (без фильтрации по дате).
+     *
+     * @param checkDate
+     * @param after
+     * @param before
+     * @return
+     */
+    private boolean isCurrectDateNotIclude(Date checkDate, Date after, Date before) {
+        if (after == null && before == null) return true;
+        if (after == null && before != null && checkDate.getTime() < before.getTime()) return true;
+        if (after != null && before == null && checkDate.getTime() > after.getTime()) return true;
+        if (after != null && before != null && checkDate.getTime() > after.getTime() && checkDate.getTime() < before.getTime())
             return true;
         return false;
     }
@@ -714,116 +736,149 @@ public class LogParser implements IPQuery, UserQuery, DateQuery, EventQuery, QLQ
 
     @Override
     public Set<Object> execute(String query) {
-        //get field1 for field2 = "value1"
+        //get ip for user = "Eduard Petrovich Morozko" and date between "11.12.2013 0:00:00" and "03.01.2014 23:59:59"
+        //get field1 for field2 = "value1" and date between "after" and "before"
         //field1: ip, user, date, event, status
         //field2: ip, user, date, event, status
         //value1 - значение поля field2
-        final int IP = 0;
-        final int USERNAME = 1;
-        final int DATE = 2;
-        final int EVENT = 3;
-        final int STATUS = 4;
+        //after и before даты
 
-        String[] arr = query.split(" ");
-        if (!arr[0].equals("get")) return null;
         String field1 = "";
-        String field2 = "";
-        String value1 = "";
         Param param1 = null;
+        String field2 = "";
         Param param2 = null;
-        boolean flag = false;
+        String value1 = "";
+        String after = "";
+        String before = "";
+        Date afterDate = null;
+        Date beforeDate = null;
+        int formatQuery = 0;
 
-        if (arr.length == 2) {
-            field1 = arr[1];
+        Matcher matcher;
+        String pattern1 = "get (?<field1>\\w+)";
+        matcher = Pattern.compile(pattern1).matcher(query);
+        if (matcher.find()) {
+            field1 = matcher.group("field1");
+            formatQuery = 1; //первый тип запроса
+        }
+
+        String pattern2 = "get (?<field1>\\w+) for (?<field2>\\w+) = \"(?<value1>.*?)\"";
+        matcher = Pattern.compile(pattern2).matcher(query);
+        if (matcher.find()) {
+            field1 = matcher.group("field1");
+            field2 = matcher.group("field2");
+            value1 = matcher.group("value1");
+            formatQuery = 2; //второй тип запроса
+        }
+
+        String pattern3 = "get (?<field1>\\w+) for (?<field2>\\w+) = \"(?<value1>.*?)\" and date between \"(?<after>.*?)\" and \"(?<before>.*?)\"";
+        matcher = Pattern.compile(pattern3).matcher(query);
+        if (matcher.find()) {
+            field1 = matcher.group("field1");
+            field2 = matcher.group("field2");
+            value1 = matcher.group("value1");
+            after = matcher.group("after");
+            before = matcher.group("before");
+            formatQuery = 3; //третий тип запроса
+        }
+        //Переводим значения field1 и field2 из строки в Enum Param, чтобы использвать номер(индекс) значения перечисления как индекс для парсинга строки
+        try {
+            param1 = Param.valueOf(field1.toUpperCase());
+        } catch (IllegalArgumentException e) {
+
+        }
+        try {
+            param2 = Param.valueOf(field2.toUpperCase());
+        } catch (IllegalArgumentException e) {
+
+        }
+        //переводим строки в даты
+        if (after != "") {
             try {
-                param1 = Param.valueOf(field1.toUpperCase());
-            } catch (IllegalArgumentException e) {
+                afterDate = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(after);
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
-        } else if (arr.length > 5 & arr[2].equals("for") & arr[4].equals("=")) {
-            field1 = arr[1];
-            field2 = arr[3];
-            value1 = query.substring(query.indexOf("\"") + 1, query.lastIndexOf("\""));
+        }
+        if (before != "") {
             try {
-                param1 = Param.valueOf(field1.toUpperCase());
-                param2 = Param.valueOf(field2.toUpperCase());
-            } catch (IllegalArgumentException e) {
+                beforeDate = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(before);
+            } catch (ParseException e) {
+                e.printStackTrace();
             }
         }
 
-        if (param1 != null && param2 == null) {
-            Param finalParam1 = param1;
-            return foundLines.stream().map(line -> {
-                String s = "";
-                if (finalParam1.ordinal() == 3) { //выводим события
-                    s = line.split("\t")[finalParam1.ordinal()];
-                    if (s.contains(" ")) {
-                        s = s.substring(0, s.indexOf(" "));
-                    }
-                    return Event.valueOf(s.toUpperCase());
-                } else if (finalParam1.ordinal() == 4) { //выводим статус
-                    s = line.split("\t")[finalParam1.ordinal()];
-                    return Status.valueOf(s.toUpperCase());
-                } else if (finalParam1.ordinal() != 2) //выводим IP и USERNAME
-                { //выводим не дату и не по событию
-                    s = line.split("\t")[finalParam1.ordinal()];
-                    return s;
-                } else {
+        String finalValue = value1;
+        Param finalParam1 = param1;
+        Param finalParam2 = param2;
+        int finalFormatQuery = formatQuery;
+        Date finalAfterDate = afterDate;
+        Date finalBeforeDate = beforeDate;
+        return foundLines.stream().filter(line -> {
+            //Если у нас 1 формат запроса (get ip for user) то не сортируем
+            if (finalFormatQuery == 1) {
+                //Если у нас 1 формат запроса (get ip for user) то не сортируем
+                return true;
+            } else if (finalFormatQuery == 2 || finalFormatQuery == 3) {
+                //Если у нас 2 формат запроса (get ip for user) то сортируем по значению второго параметра
+                //Если у нас 3 формат запроса то дополнительно сортируем по попаданию в интервал
+                boolean isCorDate=true; //Флаг попадания в интервал для 3-го типа запроса, по умолчанию true, т.к. он же используется и в запросах второго типа
+                if (finalFormatQuery == 3) {
+                    //Если у нас 3 формат запроса (get ip for user) то сортируем по значению второго параметра + попадание в интервал дат
+                    Date dateFromLine = null;
                     try {
-                        Date dl = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(line.split("\t")[finalParam1.ordinal()]);
-                        return dl;
+                        dateFromLine = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(line.split("\t")[Param.DATE.ordinal()]);
+                        isCorDate = isCurrectDateNotIclude(dateFromLine, finalAfterDate, finalBeforeDate);
                     } catch (Exception e) {
-                        return null;
+                        isCorDate=false;
+                        System.out.println("Не удалось преобразовать дату из строки лога: " + line);
                     }
                 }
-            }).collect(Collectors.toSet());
-        } else if (param2 != null && !value1.trim().equals("")) {
-            Param finalParam1 = param1;
-            Param finalParam2 = param2;
-            String finalValue = value1;
-            return foundLines.stream().filter(line -> {
-                if (finalParam2.ordinal() == 3) {//если филтруем по событию
+                if (finalParam2.ordinal() == 2) { //фильтрум конкретной по дате
+                    try {
+                        Date dateFromLine = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(line.split("\t")[finalParam2.ordinal()]);
+                        Date dateFromParam = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(finalValue);
+                        return isCorDate && dateFromLine.equals(dateFromParam); //если фильтруем по дате
+                    } catch (Exception e) {
+                        System.out.println("Не удалось преобразовать дату из строки лога: " + line);
+                        System.out.println("или дату из запроса: " + finalValue + " : " + query);
+                        return false;
+                    }
+                }else if (finalParam2.ordinal() == 3) {//если филтруем по событию
                     String s = "";
                     s = line.split("\t")[finalParam2.ordinal()];
                     if (s.contains(" ")) {
                         s = s.substring(0, s.indexOf(" "));
                     }
-                    return s.equals(finalValue);
+                    return isCorDate && s.equals(finalValue);
+                }else {//фильтруем по IP, USER, Status - они текстовые сними проблем нет
+                    return isCorDate && line.split("\t")[finalParam2.ordinal()].equals(finalValue);
                 }
-                if (finalParam2.ordinal() != 2) {//фильтруем не по дате и не по событию
-                    return line.split("\t")[finalParam2.ordinal()].equals(finalValue);
+            }
+            return false; //Если не подошли не по одному условию, то ничего не выводим
+        }).map(line -> {
+            String s = "";
+            if (finalParam1.ordinal() == 3) { //выводим события
+                s = line.split("\t")[finalParam1.ordinal()];
+                if (s.contains(" ")) {
+                    s = s.substring(0, s.indexOf(" "));
                 }
+                return Event.valueOf(s.toUpperCase());
+            } else if (finalParam1.ordinal() == 4) { //выводим статус
+                s = line.split("\t")[finalParam1.ordinal()];
+                return Status.valueOf(s.toUpperCase());
+            } else if (finalParam1.ordinal() != 2) //выводим IP и USERNAME
+            { //выводим не дату и не по событию
+                s = line.split("\t")[finalParam1.ordinal()];
+                return s;
+            } else {
                 try {
-                    Date dl = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(line.split("\t")[finalParam2.ordinal()]);
-                    Date dv = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(finalValue);
-                    return dl.equals(dv); //если фильтруем по дате
+                    Date dl = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(line.split("\t")[finalParam1.ordinal()]);
+                    return dl;
                 } catch (Exception e) {
-                    return false;
+                    return null;
                 }
-            }).map(line -> {
-                String s = "";
-                if (finalParam1.ordinal() == 3) { //выводим события
-                    s = line.split("\t")[finalParam1.ordinal()];
-                    if (s.contains(" ")) {
-                        s = s.substring(0, s.indexOf(" "));
-                    }
-                    return Event.valueOf(s.toUpperCase());
-                } else if (finalParam1.ordinal() == 4) { //выводим статус
-                    s = line.split("\t")[finalParam1.ordinal()];
-                    return Status.valueOf(s.toUpperCase());
-                } else if (finalParam1.ordinal() != 2) //выводим IP и USERNAME
-                { //выводим не дату и не по событию
-                    s = line.split("\t")[finalParam1.ordinal()];
-                    return s;
-                } else {
-                    try {
-                        Date dl = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss").parse(line.split("\t")[finalParam1.ordinal()]);
-                        return dl;
-                    } catch (Exception e) {
-                        return null;
-                    }
-                }
-            }).collect(Collectors.toSet());
-        }
-        return null;
+            }
+        }).collect(Collectors.toSet());
     }
 }
