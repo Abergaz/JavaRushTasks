@@ -4,9 +4,9 @@ import java.io.IOException;
 import java.rmi.RemoteException;
 
 /* 
-Перехват checked-исключений
-В методе handleExceptions обработайте все checked исключения.
-Нужно вывести на экран возникшее checked исключение.
+Перехват exception-исключений
+В методе handleExceptions обработайте все exception исключения.
+Нужно вывести на экран возникшее exception исключение.
 Можно использовать только один блок try..catch
 
 
@@ -15,7 +15,7 @@ import java.rmi.RemoteException;
 2. Метод handleExceptions должен вызывать метод method2.
 3. Метод handleExceptions должен вызывать метод method3.
 4. Метод handleExceptions должен использовать только один блок try..catch.
-5. Метод handleExceptions должен отлавливать и выводить на экран все возникающие checked исключения.
+5. Метод handleExceptions должен отлавливать и выводить на экран все возникающие exception исключения.
 6. Программа должна выводить на экран текст.
 */
 

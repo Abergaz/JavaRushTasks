@@ -1,7 +1,7 @@
 package com.javarush.task.task38.task3802;
 
 /* 
-Проверяемые исключения (checked exception)
+Проверяемые исключения (exception exception)
 Напиши реализацию метода veryComplexMethod().
 Он должен всегда кидать какое-нибудь проверяемое исключение.
 Кинуть исключение (throw) явно нельзя.

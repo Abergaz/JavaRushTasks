@@ -2,7 +2,7 @@ package com.javarush.task.task38.task3801;
 
 /* 
 Исправь ошибки в коде
-Исключения NameIsEmptyException и NameIsNullException должны быть checked.
+Исключения NameIsEmptyException и NameIsNullException должны быть exception.
 Все типы исключений должны быть обработаны.
 Реализацию методов main() и getNumberOfCharacters() не менять.
 Изменен должен быть только порядок catch блоков в методе main().
