@@ -10,10 +10,10 @@ import java.util.Calendar;
 
 public class Solution {
     public static void main(String[] args) {
-        printDate("21.4.2014 15:56:45");
-        System.out.println();
-        printDate("21.4.2014");
-        System.out.println();
+     //   printDate("13.1.2019 15:56:45");
+     //   System.out.println();
+     //   printDate("21.4.2014");
+     //   System.out.println();
         printDate("17:33:40");
     }
 
@@ -23,7 +23,7 @@ public class Solution {
         boolean printDate = false;
         boolean printTime = false;
         //напишите тут ваш код
-        if (date.matches("\\d{1,2}\\.\\d{1,2}\\.\\d{4}\\s\\d{2}:\\d{2}:\\d{2}")) {
+        if (date.matches("\\d{1,2}\\.\\d{1,2}\\.\\d{4}\\s\\d{1,2}:\\d{1,2}:\\d{1,2}")) {
             simpleDateFormat = new SimpleDateFormat("dd.MM.yy HH:mm:ss");
             printDate=true;
             printTime=true;
@@ -32,7 +32,7 @@ public class Solution {
             simpleDateFormat = new SimpleDateFormat("dd.MM.yy");
             printDate=true;
         }
-        if (date.matches("\\d{2}:\\d{2}:\\d{2}")) {
+        if (date.matches("\\d{1,2}:\\d{1,2}:\\d{1,2}")) {
             simpleDateFormat = new SimpleDateFormat("HH:mm:ss");
             printTime=true;
         }
